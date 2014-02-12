@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Assignment 1: Residential Mobility</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100%; width: 100%;}
+      body { height: 100%; width: 100%; padding-top: 60px}
+	   #map {
+		position: absolute;
+		float: left;
+		height: 94%;
+		width: 98%;
+		z-index: 1;
+	}
+
+    </style>
+	
+	<!--tells script where css file is for styling leaflet icons -->
+	
+	<link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Zoomslider.css" />
+	<link rel="stylesheet" href="css/L.Control.Pan.css" />
+	<link rel="stylesheet" href="css/font-awesome.min.css" />
+	<link href="css/bootstrap.css" rel="stylesheet">
+	<link rel="stylesheet" href="css/leaflet.label.css" />
+	
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAw9yX3E89LxBWYg4hdKePRgx9ti2tGWPk&sensor=false"></script>
+	<script src="js/leaflet-src.js"></script>
+	<script src="js/L.Control.Pan.js" ></script>   
+	<script src="js/L.Control.Zoomslider.js"></script>
+	<script src="js/leaflet-dvf.js"></script>
+	<script src="js/leaflet-filecontrol-new.js"></script>
+     <script src="data/ResidentialMobility.js"></script>
+         <script src="data/PlanningNeighbrhd.js"></script>
+         <script src="data/Income.js"></script>
+         <script src="js/leaflet.label-src.js"></script>
+
+	 
+	 
+	 
+	 <script src="js/geostats.js"></script>
+
+	<!--Script to use google maps as Base: taken from http://matchingnotes.com/using-google-map-tiles-with-leaflet-->
+	<script src="js/leaflet-google.js"></script>
+  </head>
+  <body>
+
+  <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand">Residential Mobility of San Francisco</a>
+        </div>
+      </div>
+    </div>
+	
+	
+	
+	
+	
+	
+	    <div class="container-fluid">
+    	<div class="row-fluid">
+			<div id="map" class="span9"></div>
+			<div id="legend" class="span3"></div>
+		</div>
+	</div>
+	<script type='text/javascript'>
+	
+  
+      
+	 window.onload = function(){
+		  //Leaftlet function to create new map - initialize the map on the "map" div with a given center and zoom
+
+	  var map = new L.Map('map', {center: new L.LatLng(37.77493,-122.41942), zoom: 12});
+	  var googleLayer = new L.Google('ROADMAP');
+	  var osm = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png',{attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' });
+	  map.addLayer(googleLayer,true);
+	  var layersControl = L.control.layers({'OSM': osm, 'Google': googleLayer});
+	  layersControl.addTo(map);	
+	
+	
+	
+			var neighdPlan = L.geoJson(neighbourlayer,{
+		style:{
+				fillColor:'#fff',
+				weight: 2,
+				opacity: 0.5,
+				color: '#d95f0e',
+				weight: 5,
+				dashArray: '1',
+				fillOpacity: 0.5
+		},
+		onEachFeature: function(feature,layer){
+				label = new L.Label();
+				label.setContent(feature.properties["neighborho"]);
+				label.setLatLng(layer.getBounds().getCenter())
+				map.showLabel(label);
+						
+		}
+		
+		
+		});
+		//neighdPlan.setZIndex(3);
+		layersControl.addOverlay(neighdPlan, "Neighbourhood Boundary");
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		var arrayValues = []; // will store values
+		for (i = 0; i < residential.features.length; i++) {
+			arrayValues.push(residential.features[i].properties.move_pct);
+		}
+	    serie = new geostats(arrayValues);
+		serie.getJenks(7);
+		var range = serie.ranges;
+		var colors =  L.ColorBrewer.Sequential.Blues['7'].slice(0);
+	    serie.setColors(colors); 
+	//addNeighbourhood Boundary	
+		
+		
+		
+		
+		
+		
+		
+	function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+	
+	 info.update(layer.feature.properties);
+
+    if (!L.Browser.ie && !L.Browser.opera) {
+        layer.bringToFront();
+    }
+}
+		
+		
+		var info = L.control();
+
+		info.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+			this.update();
+			return this._div;
+		};
+
+		// method that we will use to update the control based on feature properties passed
+		info.update = function (props) {
+			this._div.innerHTML = '<h4>% of Residents 1 year and older,<br> living in the same house as one year ago<br> </h4>' +  (props ? + props.move_pct 				: 'Hover over an area');
+		};
+
+		info.addTo(map);
+		
+		
+		
+		
+		
+		function style(feature) {
+			return {
+				fillColor: colors[serie.getClass(feature.properties["move_pct"],range)],
+				weight: 2,
+				opacity: 0.9,
+				color: 'black',
+				//dashArray: '3',
+				fillOpacity: 0.5
+			};
+		}	
+		
+			function resetHighlight(e) {
+					residentLayer.resetStyle(e.target);
+					info.update();
+		}	
+		
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mouseover: highlightFeature,
+				mouseout: resetHighlight,
+				click: zoomToFeature
+			});
+		}
+
+		function zoomToFeature(e) {
+			map.fitBounds(e.target.getBounds());
+		}
+	var legend = L.control({position: 'bottomright'});
+
+		legend.onAdd = function (map) {
+
+			var div = L.DomUtil.create('div', 'info legend'),
+				grades = range,
+				labels = [];
+			div.innerHTML += '<h>Jenks Interval</h><br>';
+			// loop through our density intervals and generate a label with a colored square for each interval
+			for (var i = 0; i < grades.length; i++) {
+				div.innerHTML +=
+					'<i style="background:' + colors[serie.getClass(grades[i],range)] + '"></i> ' +
+					grades[i] + (grades[i + 1] ? '' + '<br>' : '+');
+			}
+
+			return div;
+		};
+
+	legend.addTo(map);
+	
+	
+	
+	
+	
+	
+	
+	
+	var residentLayer = L.geoJson(residential,{style:style, onEachFeature: onEachFeature});
+	
+	 
+	
+	  	map.addLayer(residentLayer);
+		//residentLayer.setZIndex(4);
+		layersControl.addOverlay(residentLayer, 'Resident Mobility');
+	 
+
+	 
+	 
+		  
+		//load geojson file
+		//var style = {color:'red', opacity: 1.0, fillOpacity: 1.0, weight: 2, clickable: true};
+        L.Control.FileLayerLoad.LABEL = '<i class="fa fa-folder-open"></i>';
+		L.Control.fileLayerLoad(layersControl,{
+			fitBounds: true,
+            layerOptions: {style:function(feature) {
+														return feature.properties.style
+							},
+							onEachFeature: function onEachFeature(feature, layer) {
+							// does this feature have a property named popupContent?
+									if (feature.properties && feature.properties.popupContent) {
+										layer.bindPopup(feature.properties.popupContent);
+									}
+							},               
+                              
+                           },
+			//fillColor: fillColorFunction1		 ,  
+						   
+						   
+						   
+						   
+        }).addTo(map);
+		
+		
+		}
+
+		
+	
+	</script>
+	
+	
+	
+	
+
+	
+	
+  </body>
+</html>
+
+
+
